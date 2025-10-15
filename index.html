@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Event Hubs Capacity Estimator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Event Hubs Capacity Estimator</h1>
+  </header>
+
+  <div class="container">
+    <section>
+      <h2>Ideal Number of Partitions Needed Today</h2>
+      <p>
+        The ideal ingress for a given Event Hub topic is <strong>1MB/s</strong>.<br>
+        We use this formula to calculate the number of partitions needed to support that:<br>
+        <code>bytes/sec ingress / (1 * 10<sup>6</sup> * 60)</code>
+      </p>
+      <label for="ingress">Max GiB/sec of Event Hub ingress:</label>
+      <input type="number" id="ingress" min="0" step="any" placeholder="Enter GiB/sec">
+      <br><br>
+      <label for="numTopics">Number of topics to shard over:</label>
+      <input type="number" id="numTopics" min="1" value="1">
+      <br><br>
+      <button id="estimateBtn">Estimate Partitions</button>
+      <div id="result" style="margin-top: 1em;"></div>
+    </section>
+  </div>
+
+  <div class="container">
+    <section>
+      <h2>Ideal Number of CUs Needed Today</h2>
+      <p>
+        The number of Capacity Units (CUs) you need is based on your total ingress requirements.<br>
+        Total ingress is calculated as required partition count × <strong>1 MB/sec</strong> (per partition).<br>
+        Each CU supports <strong>150 MB/sec</strong> ingress, so the number of CUs needed is:<br>
+        <code>Total Ingress Needed / 150 MB/sec</code>
+      </p>
+      <p>
+        A <strong>dedicated tier</strong> Event Hubs allows for up to 1024 partitions per topic and up to 10 CUs per cluster.<br>
+        A <strong>custom-built cluster</strong> allows for up to 1008 partitions per topic and up to 36 CUs per cluster.
+      </p>
+      <label for="tier">Select Event Hubs Tier:</label>
+      <select id="tier">
+        <option value="dedicated">Dedicated</option>
+        <option value="custom">Custom</option>
+      </select>
+      <br><br>
+      <label for="numClusters">Number of Clusters:</label>
+      <input type="number" id="numClusters" min="1" value="1">
+      <br><br>
+      <label for="cusPerCluster">Number of CUs per Cluster:</label>
+      <input type="number" id="cusPerCluster" min="1" value="10">
+      <br><br>
+      <button id="cuBtn">Estimate CUs</button>
+      <div id="cuResult" style="margin-top: 1em;"></div>
+      <div id="cuConclusion" style="margin-top: 1em; font-weight: bold;"></div>
+    </section>
+  </div>
+
+  <div class="container">
+    <section>
+      <h2>Current Capacity Evaluation</h2>
+      <table id="capacity-table">
+        <thead>
+          <tr>
+            <th>Current Req. Partition Count</th>
+            <th>Current Max Partition Count</th>
+            <th>Current Req. CU Count</th>
+            <th>Current Max CU Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Table row inserted by JS -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="container">
+    <section>
+      <h2>7 Month Projected Partition Requirements</h2>
+      <p>
+        GLB logs have grown <a href="https://app.datadoghq.com/s/59fe6c40c/p2w-g5h-wig" target="_blank">10% each month from April to October</a>.
+        So, let's assume that rate of growth will continue, and we can predict the total number of partitions needs like this:
+        <code>current_num_partitions_needed * 1.1</code>.
+      </p>
+      <table id="projection-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Est. Num Partitions Needed (per topic)</th>
+            <th>Projected Required CUs</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Table rows inserted by JS -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
