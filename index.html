@@ -9,6 +9,17 @@
   <header>
     <h1>Event Hubs Capacity Estimator</h1>
   </header>
+  <div class="container">
+    <section>
+      <h2>About This Tool</h2>
+      <p>
+        This tool helps estimate the number of partitions and Capacity Units (CUs) needed for an Azure Event Hubs cluster based on your ingress requirements.
+      </p>
+      <p>
+        Please refer to the <a href="https://github.com/github/observability/blob/main/docs/log-storage/octokus-glb-federated-kusto-cluster/how-to-calculate-event-hubs-capacity-for-glb-federated-kusto-cluster.md">our docs</a> for more information.
+      </p>
+    </section>
+  </div>
 
   <div class="container">
     <section>
@@ -93,7 +104,9 @@
           <tr>
             <th>Month</th>
             <th>Est. Num Partitions Needed (per topic)</th>
+            <th>% Partition Capacity Remaining</th>
             <th>Projected Required CUs</th>
+            <th>% CU Capacity Remaining</th>
           </tr>
         </thead>
         <tbody>

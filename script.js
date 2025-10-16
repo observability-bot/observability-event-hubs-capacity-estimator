@@ -5,10 +5,9 @@ let lastTier = 'dedicated';
 let lastCusPerCluster = 10;
 
 document.getElementById('estimateBtn').addEventListener('click', function() {
-// Convert TiB/day to MB/day (1 TiB = 1,048,576 MB)
+  // Convert TiB/day to MB/day (1 TiB = 1,048,576 MB)
   const ingressTiB = parseFloat(document.getElementById('ingress').value);
   const ingressMB = Math.ceil(ingressTiB * 1099511.62 / 86400);
-  console.log(ingressMB)
   const numTopics = parseInt(document.getElementById('numTopics').value, 10) || 1;
   const resultDiv = document.getElementById('result');
   if (isNaN(ingressMB) || ingressMB <= 0) {
@@ -19,8 +18,7 @@ document.getElementById('estimateBtn').addEventListener('click', function() {
     lastNumTopics = numTopics;
     return;
   }
-  // MB/sec to bytes/sec (1 MB = 1,048,576 bytes)
-  const bytesPerSec = ingressMB * 1048576;
+ 
   // Number of partitions PER TOPIC
   const partitionsPerTopic = ingressMB / numTopics;
   resultDiv.textContent = `Required number of partitions per topic: ${partitionsPerTopic} (across ${numTopics} topic${numTopics > 1 ? 's' : ''})`;
@@ -37,7 +35,6 @@ document.getElementById('estimateBtn').addEventListener('click', function() {
   updateCapacityTable(partitionsPerTopic, numCUsNeeded, numTopics, numClusters, tier);
 });
 
-// CU section
 const tierSelect = document.getElementById('tier');
 const cusPerClusterInput = document.getElementById('cusPerCluster');
 const numClustersInput = document.getElementById('numClusters');
@@ -105,19 +102,18 @@ document.getElementById('cuBtn').addEventListener('click', function() {
     return;
   }
 
+
   const overallMaxPartitions = maxPartitionsPerTopic * numClusters * lastNumTopics;
 
   const totalIngressNeeded = lastPartitionCount * lastNumTopics * 1;
   const numCUsNeeded = Math.ceil(totalIngressNeeded / 150);
   const clusterConfigCUs = numClusters * cusPerCluster;
-  const overallMaxCUs = maxCUsPerCluster * numClusters;
 
   cuResultDiv.innerHTML = `
     <div>Number of CUs needed today (based on partition count): <strong>${numCUsNeeded}</strong></div>
     <div>Your cluster config supports: <strong>${clusterConfigCUs}</strong> CUs</div>
     <div>Max partitions supported: <strong>${overallMaxPartitions}</strong> (${maxPartitionsPerTopic} per topic, per cluster)</div>
   `;
-
 
   updateCapacityTable(
     lastPartitionCount,
@@ -136,32 +132,54 @@ function updateProjectionTable(currentPartitions, numTopics, numClusters, tier, 
   }
   const maxPartitionsPerTopic = (tier === 'dedicated' ? 1024 : 1008) * numClusters;
   const maxCUs = cusPerCluster * numClusters;
+
   const now = new Date();
-  let month = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+  let month = now.getMonth();
   let year = now.getFullYear();
   let projectedPartitions = currentPartitions;
+
   for (let i = 0; i < 7; i++) {
     const monthName = new Date(year, month, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
     const row = document.createElement('tr');
     const monthCell = document.createElement('td');
     monthCell.textContent = monthName;
+
     const partitionsCount = Math.ceil(projectedPartitions);
     const partitionsCell = document.createElement('td');
     partitionsCell.textContent = partitionsCount;
+
+    // Remaining partition Capacity Calculations (show negatives)
+    let partitionCapacityRemaining = ((maxPartitionsPerTopic - partitionsCount) / maxPartitionsPerTopic) * 100;
+    partitionCapacityRemaining = partitionCapacityRemaining.toFixed(2);
+    const partitionRemCell = document.createElement('td');
+    partitionRemCell.textContent = `${partitionCapacityRemaining}%`;
+    
     const projectedCUs = Math.ceil(partitionsCount * numTopics / 150);
     const cuCell = document.createElement('td');
+    cuCell.textContent = projectedCUs;
 
-    // Compare to cluster config, not just max per tier
+    // Remaining cu Capacity Calculations (show negatives)
+    let cuCapacityRemaining = ((maxCUs - projectedCUs) / maxCUs) * 100;
+    cuCapacityRemaining = cuCapacityRemaining.toFixed(2);
+    const cuRemCell = document.createElement('td');
+    cuRemCell.textContent = `${cuCapacityRemaining}%`;
+
+    // Capacity coloring logic
     const partitionClass = partitionsCount <= maxPartitionsPerTopic ? 'capacity-ok' : 'capacity-bad';
     const cuClass = projectedCUs <= maxCUs ? 'capacity-ok' : 'capacity-bad';
     partitionsCell.className = partitionClass;
     cuCell.className = cuClass;
-    cuCell.textContent = projectedCUs;
+    partitionRemCell.className = partitionClass;
+    cuRemCell.className = cuClass;
 
     row.appendChild(monthCell);
     row.appendChild(partitionsCell);
+    row.appendChild(partitionRemCell);
     row.appendChild(cuCell);
+    row.appendChild(cuRemCell);
+
     tbody.appendChild(row);
+
     projectedPartitions *= 1.1;
     month++;
     if (month > 11) {
