@@ -5,21 +5,24 @@ let lastTier = 'dedicated';
 let lastCusPerCluster = 10;
 
 document.getElementById('estimateBtn').addEventListener('click', function() {
-  const ingressGiB = parseFloat(document.getElementById('ingress').value);
+// Convert TiB/day to MB/day (1 TiB = 1,048,576 MB)
+  const ingressTiB = parseFloat(document.getElementById('ingress').value);
+  const ingressMB = Math.ceil(ingressTiB * 1099511.62 / 86400);
+  console.log(ingressMB)
   const numTopics = parseInt(document.getElementById('numTopics').value, 10) || 1;
   const resultDiv = document.getElementById('result');
-  if (isNaN(ingressGiB) || ingressGiB <= 0) {
-    resultDiv.textContent = 'Please enter a valid number greater than 0 for GiB/sec ingress.';
+  if (isNaN(ingressMB) || ingressMB <= 0) {
+    resultDiv.textContent = 'Please enter a valid number greater than 0 for MB/sec ingress.';
     updateProjectionTable(null, numTopics, lastNumClusters, lastTier, lastCusPerCluster);
     updateCapacityTable(null, null, numTopics, lastNumClusters, lastTier);
     lastPartitionCount = null;
     lastNumTopics = numTopics;
     return;
   }
-  // GiB/sec to bytes/sec (1 GiB = 1,073,741,824 bytes)
-  const bytesPerSec = ingressGiB * 1073741824;
+  // MB/sec to bytes/sec (1 MB = 1,048,576 bytes)
+  const bytesPerSec = ingressMB * 1048576;
   // Number of partitions PER TOPIC
-  const partitionsPerTopic = Math.ceil(bytesPerSec / (1e6 * 60) / numTopics);
+  const partitionsPerTopic = ingressMB / numTopics;
   resultDiv.textContent = `Required number of partitions per topic: ${partitionsPerTopic} (across ${numTopics} topic${numTopics > 1 ? 's' : ''})`;
   lastPartitionCount = partitionsPerTopic;
   lastNumTopics = numTopics;
@@ -134,7 +137,7 @@ function updateProjectionTable(currentPartitions, numTopics, numClusters, tier, 
   const maxPartitionsPerTopic = (tier === 'dedicated' ? 1024 : 1008) * numClusters;
   const maxCUs = cusPerCluster * numClusters;
   const now = new Date();
-  let month = now.getMonth();
+  let month = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
   let year = now.getFullYear();
   let projectedPartitions = currentPartitions;
   for (let i = 0; i < 7; i++) {

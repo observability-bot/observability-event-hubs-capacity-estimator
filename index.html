@@ -15,11 +15,12 @@
       <h2>Ideal Number of Partitions Needed Today</h2>
       <p>
         The ideal ingress for a given Event Hub topic is <strong>1MB/s</strong>.<br>
-        We use this formula to calculate the number of partitions needed to support that:<br>
-        <code>bytes/sec ingress / (1 * 10<sup>6</sup> * 60)</code>
       </p>
-      <label for="ingress">Max GiB/sec of Event Hub ingress:</label>
-      <input type="number" id="ingress" min="0" step="any" placeholder="Enter GiB/sec">
+      <p>To determine your max number of MB/s in the past month, view <a href="https://app.datadoghq.com/notebook/12955404?cell_id=z1gmwj4b&tpl_var_event_hub_namespace=octolog-event-hubs-%2A&tpl_var_topic=glb">this</a> graph and select your Event Hub cluster name and topic</p>
+      <p>Then, choose the <strong>maximum TiB</strong> value from the past month.</p>
+      <p>From there, we will calculate the max MB/sec observed on that day, and use it to determine the number of partitions needed.</p>
+      <label for="ingress">Highest total TiB/day of Event Hub ingress:</label>
+      <input type="number" id="ingress" min="0" step="any" placeholder="Enter TiB/day">
       <br><br>
       <label for="numTopics">Number of topics to shard over:</label>
       <input type="number" id="numTopics" min="1" value="1">
