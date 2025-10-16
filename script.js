@@ -50,26 +50,30 @@ const tierSelect = document.getElementById('tier');
 const cusPerClusterInput = document.getElementById('cusPerCluster');
 const numClustersInput = document.getElementById('numClusters');
 
+// Set initial default on page load
+if (tierSelect.value === 'dedicated') {
+  maxPartitionsPerTopicInput.value = 1024;
+  lastMaxPartitionsPerTopic = 1024;
+} else {
+  maxPartitionsPerTopicInput.value = 1008;
+  lastMaxPartitionsPerTopic = 1008;
+}
+
 tierSelect.addEventListener('change', function() {
   if (tierSelect.value === 'dedicated') {
     cusPerClusterInput.value = 10;
     cusPerClusterInput.max = 10;
     lastTier = 'dedicated';
     lastCusPerCluster = 10;
-    // Only update default max partitions per topic if user hasn't typed a custom value
-    if (!maxPartitionsPerTopicInput.value) {
-      lastMaxPartitionsPerTopic = 1024;
-      maxPartitionsPerTopicInput.value = 1024;
-    }
+    maxPartitionsPerTopicInput.value = 1024;
+    lastMaxPartitionsPerTopic = 1024;
   } else {
     cusPerClusterInput.value = 36;
     cusPerClusterInput.max = 36;
     lastTier = 'custom';
     lastCusPerCluster = 36;
-    if (!maxPartitionsPerTopicInput.value) {
-      lastMaxPartitionsPerTopic = 1008;
-      maxPartitionsPerTopicInput.value = 1008;
-    }
+    maxPartitionsPerTopicInput.value = 1008;
+    lastMaxPartitionsPerTopic = 1008;
   }
   const numClusters = parseInt(numClustersInput.value, 10) || 1;
   lastNumClusters = numClusters;
@@ -78,6 +82,7 @@ tierSelect.addEventListener('change', function() {
   const numCUsNeeded = Math.ceil(totalIngressNeeded / 150);
   updateCapacityTable(lastPartitionCount, numCUsNeeded, lastNumTopics, numClusters, tierSelect.value, lastMaxPartitionsPerTopic);
 });
+
 
 cusPerClusterInput.addEventListener('input', function() {
   lastCusPerCluster = parseInt(cusPerClusterInput.value, 10) || (tierSelect.value === 'dedicated' ? 10 : 36);
