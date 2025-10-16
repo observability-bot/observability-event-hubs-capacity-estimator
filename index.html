@@ -66,6 +66,8 @@
       <label for="cusPerCluster">Number of CUs per Cluster:</label>
       <input type="number" id="cusPerCluster" min="1" value="10">
       <br><br>
+      <label for="maxPartitionsPerTopic">Max partitions per topic (per cluster):</label>
+      <input type="number" id="maxPartitionsPerTopic" min="1" value="1024">
       <button id="cuBtn">Estimate CUs</button>
       <div id="cuResult" style="margin-top: 1em;"></div>
       <div id="cuConclusion" style="margin-top: 1em; font-weight: bold;"></div>
