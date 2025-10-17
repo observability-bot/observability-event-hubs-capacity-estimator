@@ -5,60 +5,62 @@ let lastTier = 'dedicated';
 let lastCusPerCluster = 10;
 let lastMaxPartitionsPerTopic = 1024; // Default for dedicated
 
-// Listen for max partitions per topic input changes
-const maxPartitionsPerTopicInput = document.getElementById('maxPartitionsPerTopic');
-maxPartitionsPerTopicInput.addEventListener('input', function() {
-  lastMaxPartitionsPerTopic = parseInt(maxPartitionsPerTopicInput.value, 10) || (lastTier === 'dedicated' ? 1024 : 1008);
-  updateProjectionTable(lastPartitionCount, lastNumTopics, lastNumClusters, lastTier, lastCusPerCluster, lastMaxPartitionsPerTopic);
-  const totalIngressNeeded = lastPartitionCount * lastNumTopics * 1;
-  const numCUsNeeded = Math.ceil(totalIngressNeeded / 150);
-  updateCapacityTable(lastPartitionCount, numCUsNeeded, lastNumTopics, lastNumClusters, lastTier, lastMaxPartitionsPerTopic);
-});
+// --- Query param sync helper functions ---
+function setQueryParamsFromInputs() {
+  const params = new URLSearchParams();
+  params.set('ingress', document.getElementById('ingress').value);
+  params.set('numTopics', document.getElementById('numTopics').value);
+  params.set('tier', document.getElementById('tier').value);
+  params.set('numClusters', document.getElementById('numClusters').value);
+  params.set('cusPerCluster', document.getElementById('cusPerCluster').value);
+  params.set('maxPartitionsPerTopic', document.getElementById('maxPartitionsPerTopic').value);
+  window.history.replaceState({}, '', `${location.pathname}?${params.toString()}`);
+}
 
-document.getElementById('estimateBtn').addEventListener('click', function() {
-   // Convert TiB/day to MB/day (1 TiB = 1,048,576 MB)
-  const ingressTiB = parseFloat(document.getElementById('ingress').value);
-  const ingressMB = Math.ceil(ingressTiB * 1099511.62 / 86400);
-  const numTopics = parseInt(document.getElementById('numTopics').value, 10) || 1;
-  const resultDiv = document.getElementById('result');
-  if (isNaN(ingressMB) || ingressMB <= 0) {
-    resultDiv.textContent = 'Please enter a valid number greater than 0 for MB/sec ingress.';
-    updateProjectionTable(null, numTopics, lastNumClusters, lastTier, lastCusPerCluster, lastMaxPartitionsPerTopic);
-    updateCapacityTable(null, null, numTopics, lastNumClusters, lastTier, lastMaxPartitionsPerTopic);
-    lastPartitionCount = null;
-    lastNumTopics = numTopics;
-    return;
+function setInputsFromQueryParams() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('ingress')) document.getElementById('ingress').value = params.get('ingress');
+  if (params.has('numTopics')) document.getElementById('numTopics').value = params.get('numTopics');
+  if (params.has('tier')) document.getElementById('tier').value = params.get('tier');
+  if (params.has('numClusters')) document.getElementById('numClusters').value = params.get('numClusters');
+  if (params.has('cusPerCluster')) document.getElementById('cusPerCluster').value = params.get('cusPerCluster');
+  if (params.has('maxPartitionsPerTopic')) document.getElementById('maxPartitionsPerTopic').value = params.get('maxPartitionsPerTopic');
+}
+
+// --- On page load, initialize fields from query params then trigger calculation ---
+window.addEventListener('DOMContentLoaded', function() {
+  setInputsFromQueryParams();
+
+  // Set initial default maxPartitionsPerTopic value if not present in URL
+  const tierSelect = document.getElementById('tier');
+  const maxPartitionsPerTopicInput = document.getElementById('maxPartitionsPerTopic');
+  if (!maxPartitionsPerTopicInput.value) {
+    if (tierSelect.value === 'dedicated') {
+      maxPartitionsPerTopicInput.value = 1024;
+      lastMaxPartitionsPerTopic = 1024;
+    } else {
+      maxPartitionsPerTopicInput.value = 1008;
+      lastMaxPartitionsPerTopic = 1008;
+    }
+  } else {
+    lastMaxPartitionsPerTopic = parseInt(maxPartitionsPerTopicInput.value, 10);
   }
- 
-  // Number of partitions PER TOPIC
-  const partitionsPerTopic = ingressMB / numTopics;
-  resultDiv.textContent = `Required number of partitions per topic: ${partitionsPerTopic} (across ${numTopics} topic${numTopics > 1 ? 's' : ''})`;
-  lastPartitionCount = partitionsPerTopic;
-  lastNumTopics = numTopics;
-  const numClusters = parseInt(document.getElementById('numClusters').value, 10) || 1;
-  const tier = document.getElementById('tier').value;
-  const cusPerCluster = parseInt(document.getElementById('cusPerCluster').value, 10) || (tier === 'dedicated' ? 10 : 36);
-  lastNumClusters = numClusters;
-  lastCusPerCluster = cusPerCluster;
-  updateProjectionTable(partitionsPerTopic, numTopics, numClusters, tier, cusPerCluster, lastMaxPartitionsPerTopic);
-  const totalIngressNeeded = partitionsPerTopic * numTopics * 1;
-  const numCUsNeeded = Math.ceil(totalIngressNeeded / 150);
-  updateCapacityTable(partitionsPerTopic, numCUsNeeded, numTopics, numClusters, tier, lastMaxPartitionsPerTopic);
+
+  // Trigger calculations if there is an ingress value
+  if (document.getElementById('ingress').value) {
+    document.getElementById('estimateBtn').click();
+  }
+  if (document.getElementById('cusPerCluster').value) {
+    document.getElementById('cuBtn').click();
+  }
 });
 
 const tierSelect = document.getElementById('tier');
 const cusPerClusterInput = document.getElementById('cusPerCluster');
 const numClustersInput = document.getElementById('numClusters');
+const maxPartitionsPerTopicInput = document.getElementById('maxPartitionsPerTopic');
 
-// Set initial default on page load
-if (tierSelect.value === 'dedicated') {
-  maxPartitionsPerTopicInput.value = 1024;
-  lastMaxPartitionsPerTopic = 1024;
-} else {
-  maxPartitionsPerTopicInput.value = 1008;
-  lastMaxPartitionsPerTopic = 1008;
-}
-
+// Set initial default if user changes tier
 tierSelect.addEventListener('change', function() {
   if (tierSelect.value === 'dedicated') {
     cusPerClusterInput.value = 10;
@@ -81,8 +83,17 @@ tierSelect.addEventListener('change', function() {
   const totalIngressNeeded = lastPartitionCount * lastNumTopics * 1;
   const numCUsNeeded = Math.ceil(totalIngressNeeded / 150);
   updateCapacityTable(lastPartitionCount, numCUsNeeded, lastNumTopics, numClusters, tierSelect.value, lastMaxPartitionsPerTopic);
+  setQueryParamsFromInputs();
 });
 
+maxPartitionsPerTopicInput.addEventListener('input', function() {
+  lastMaxPartitionsPerTopic = parseInt(maxPartitionsPerTopicInput.value, 10) || (lastTier === 'dedicated' ? 1024 : 1008);
+  updateProjectionTable(lastPartitionCount, lastNumTopics, lastNumClusters, lastTier, lastCusPerCluster, lastMaxPartitionsPerTopic);
+  const totalIngressNeeded = lastPartitionCount * lastNumTopics * 1;
+  const numCUsNeeded = Math.ceil(totalIngressNeeded / 150);
+  updateCapacityTable(lastPartitionCount, numCUsNeeded, lastNumTopics, lastNumClusters, lastTier, lastMaxPartitionsPerTopic);
+  setQueryParamsFromInputs();
+});
 
 cusPerClusterInput.addEventListener('input', function() {
   lastCusPerCluster = parseInt(cusPerClusterInput.value, 10) || (tierSelect.value === 'dedicated' ? 10 : 36);
@@ -90,6 +101,7 @@ cusPerClusterInput.addEventListener('input', function() {
   const totalIngressNeeded = lastPartitionCount * lastNumTopics * 1;
   const numCUsNeeded = Math.ceil(totalIngressNeeded / 150);
   updateCapacityTable(lastPartitionCount, numCUsNeeded, lastNumTopics, lastNumClusters, tierSelect.value, lastMaxPartitionsPerTopic);
+  setQueryParamsFromInputs();
 });
 
 numClustersInput.addEventListener('input', function() {
@@ -98,6 +110,43 @@ numClustersInput.addEventListener('input', function() {
   const totalIngressNeeded = lastPartitionCount * lastNumTopics * 1;
   const numCUsNeeded = Math.ceil(totalIngressNeeded / 150);
   updateCapacityTable(lastPartitionCount, numCUsNeeded, lastNumTopics, lastNumClusters, tierSelect.value, lastMaxPartitionsPerTopic);
+  setQueryParamsFromInputs();
+});
+
+document.getElementById('ingress').addEventListener('input', setQueryParamsFromInputs);
+document.getElementById('numTopics').addEventListener('input', setQueryParamsFromInputs);
+
+document.getElementById('estimateBtn').addEventListener('click', function() {
+  // Convert TiB/day to MB/day (1 TiB = 1,048,576 MB)
+  const ingressTiB = parseFloat(document.getElementById('ingress').value);
+  // If the input is actually meant to be "MB/sec", remove the division by 86400!
+  const ingressMB = Math.ceil(ingressTiB * 1099511.62 / 86400);
+  const numTopics = parseInt(document.getElementById('numTopics').value, 10) || 1;
+  const resultDiv = document.getElementById('result');
+  if (isNaN(ingressMB) || ingressMB <= 0) {
+    resultDiv.textContent = 'Please enter a valid number greater than 0 for MB/sec ingress.';
+    updateProjectionTable(null, numTopics, lastNumClusters, lastTier, lastCusPerCluster, lastMaxPartitionsPerTopic);
+    updateCapacityTable(null, null, numTopics, lastNumClusters, lastTier, lastMaxPartitionsPerTopic);
+    lastPartitionCount = null;
+    lastNumTopics = numTopics;
+    return;
+  }
+
+  // Number of partitions PER TOPIC
+  const partitionsPerTopic = ingressMB / numTopics;
+  resultDiv.textContent = `Required number of partitions per topic: ${partitionsPerTopic} (across ${numTopics} topic${numTopics > 1 ? 's' : ''})`;
+  lastPartitionCount = partitionsPerTopic;
+  lastNumTopics = numTopics;
+  const numClusters = parseInt(document.getElementById('numClusters').value, 10) || 1;
+  const tier = document.getElementById('tier').value;
+  const cusPerCluster = parseInt(document.getElementById('cusPerCluster').value, 10) || (tier === 'dedicated' ? 10 : 36);
+  lastNumClusters = numClusters;
+  lastCusPerCluster = cusPerCluster;
+  updateProjectionTable(partitionsPerTopic, numTopics, numClusters, tier, cusPerCluster, lastMaxPartitionsPerTopic);
+  const totalIngressNeeded = partitionsPerTopic * numTopics * 1;
+  const numCUsNeeded = Math.ceil(totalIngressNeeded / 150);
+  updateCapacityTable(partitionsPerTopic, numCUsNeeded, numTopics, numClusters, tier, lastMaxPartitionsPerTopic);
+  setQueryParamsFromInputs();
 });
 
 document.getElementById('cuBtn').addEventListener('click', function() {
@@ -118,12 +167,14 @@ document.getElementById('cuBtn').addEventListener('click', function() {
     cuResultDiv.textContent = 'Please enter valid numbers for clusters and CUs per cluster.';
     cuConclusionDiv.textContent = '';
     updateCapacityTable(null, null, lastNumTopics, numClusters, tier, maxPartitionsPerTopic);
+    setQueryParamsFromInputs();
     return;
   }
   if (!lastPartitionCount || lastPartitionCount < 1) {
     cuResultDiv.textContent = 'Please estimate partition count first.';
     cuConclusionDiv.textContent = '';
     updateCapacityTable(null, null, lastNumTopics, numClusters, tier, maxPartitionsPerTopic);
+    setQueryParamsFromInputs();
     return;
   }
 
@@ -137,7 +188,6 @@ document.getElementById('cuBtn').addEventListener('click', function() {
     <div>Number of CUs needed today (based on partition count): <strong>${numCUsNeeded}</strong></div>
     <div>Your cluster config supports: <strong>${clusterConfigCUs}</strong> CUs</div>
     <div>Max partitions supported: <strong>${overallMaxPartitions}</strong> (${maxPartitionsPerTopic} per topic, per cluster)</div>
-    ${partitionWarning ? `<div style="color:#e63946;">${partitionWarning}</div>` : ''}
   `;
 
   updateCapacityTable(
@@ -148,6 +198,7 @@ document.getElementById('cuBtn').addEventListener('click', function() {
     tier,
     maxPartitionsPerTopic
   );
+  setQueryParamsFromInputs();
 });
 
 function updateProjectionTable(currentPartitions, numTopics, numClusters, tier, cusPerCluster, maxPartitionsPerTopic) {
@@ -245,28 +296,11 @@ function updateCapacityTable(reqPartitionsPerTopic, reqCUs, numTopics, numCluste
   const maxCUCell = document.createElement('td');
   maxCUCell.textContent = maxCUs;
   maxCUCell.className = cuClass;
+  
   row.appendChild(reqPartCell);
   row.appendChild(maxPartCell);
   row.appendChild(reqCUCell);
   row.appendChild(maxCUCell);
+  
   tableBody.appendChild(row);
-}
-
-function findOverCapacityMonth(initialPartitions, clusterConfigCUs, tier, numClusters, numTopics) {
-  let projectedPartitions = initialPartitions;
-  for (let i = 0; i < 7; i++) {
-    const projectedCUs = Math.ceil(projectedPartitions * numTopics / 150);
-    if (projectedCUs > clusterConfigCUs) {
-      const now = new Date();
-      let targetMonth = now.getMonth() + i;
-      let year = now.getFullYear();
-      if (targetMonth > 11) {
-        targetMonth -= 12;
-        year += 1;
-      }
-      return new Date(year, targetMonth, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
-    }
-    projectedPartitions *= 1.1;
-  }
-  return "the next 7 months";
 }
