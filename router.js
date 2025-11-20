@@ -9,7 +9,6 @@ class Router {
     document.addEventListener('click', (e) => {
       if (e.target.matches('.main-nav a') || e.target.matches('nav a')) {
         e.preventDefault();
-        debugger
         const href = e.target.getAttribute('href');
         this.navigateTo(href);
       }
