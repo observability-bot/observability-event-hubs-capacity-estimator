@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ADX Capacity Estimator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>ADX Capacity Estimator</h1>
+    <nav class="main-nav">
+      <a href="/">Event Hubs Estimator</a>
+      <a href="/adx-capacity-estimator" class="active">ADX Capacity Estimator</a>
+      <a href="/blob-store-capacity-estimator">Blob Store Capacity Estimator</a>
+    </nav>
+  </header>
+  
+  <div class="container">
+    <section>
+      <h2>About This Tool</h2>
+      <p>
+        This tool estimates ADX performance metrics based on your ingestion load and cluster configuration.
+        The calculations are based on observed baseline performance for 195TB/day ingestion with 300 instances.
+      </p>
+      <p>
+        <strong>Baseline metrics (195TB/day, single cluster with 300 instances):</strong><br>
+        • Average latency: 1.18 minutes<br>
+        • Maximum latency: 14.02 minutes<br>
+        • CPU utilization: ~15% per cluster<br>
+        • Cache utilization: ~30%<br><br>
+        <strong>Example:</strong> 175TB/day across 4 clusters would show ~3.4% CPU per cluster.
+      </p>
+    </section>
+  </div>
+
+  <div class="container">
+    <section>
+      <h2>Performance Calculator</h2>
+      <p>
+        Enter your expected ingestion volume and cluster configuration to estimate performance metrics.
+      </p>
+      
+      <label for="ingestTBPerDay">Daily Data Ingestion (TB/day):</label>
+      <input type="number" id="ingestTBPerDay" min="0" step="any" placeholder="Enter TB/day" value="195">
+      
+      <label for="clusterCount">Number of Clusters:</label>
+      <input type="number" id="clusterCount" min="1" value="1">
+      
+      <button id="calculateBtn">Calculate Performance Metrics</button>
+      <div id="metricsResult" style="margin-top: 1em;"></div>
+    </section>
+  </div>
+
+  <div class="container">
+    <section>
+      <h2>Estimated vs Baseline Metrics</h2>
+      
+      <table id="metrics-table" style="display: none;">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Baseline (195TB/day, 1 cluster, 300 instances)</th>
+            <th>Your Estimated Performance (per cluster)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Table rows will be populated by JavaScript -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="container">
+    <section>
+      <h2>Performance Analysis</h2>
+      <div id="performanceAnalysis">
+        <p>Complete the calculation above to see performance analysis.</p>
+      </div>
+    </section>
+  </div>
+
+  <div class="container">
+    <section>
+      <h2>6 Month Performance Projection</h2>
+      <p>
+        Performance projection assuming <strong>10% monthly growth</strong> in ingestion volume.
+      </p>
+      <table id="adx-projection-table" style="display: none;">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Projected Volume (TB/day)</th>
+            <th>Avg Latency (min)</th>
+            <th>CPU Utilization (%)</th>
+            <th>Cache Utilization (%)</th>
+            <th>Min Instances per Cluster</th>
+            <th>Performance Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Table rows inserted by JS -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <script src="router.js"></script>
+  <script src="adx-script.js"></script>
+</body>
+</html>

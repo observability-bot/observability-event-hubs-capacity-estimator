@@ -15,9 +15,38 @@ header {
 h1 {
   color: #ffffff;
   font-size: 2.2rem;
-  margin: 0;
+  margin: 0 0 16px 0;
   font-weight: 600;
   letter-spacing: 1px;
+}
+
+.main-nav {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+.main-nav a {
+  color: #ffffff;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+  border: 1px solid transparent;
+}
+
+.main-nav a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.main-nav a.active {
+  background-color: #2da44e;
+  border-color: #2da44e;
+}
+
+.main-nav a.active:hover {
+  background-color: #218838;
 }
 
 .container {
@@ -118,8 +147,78 @@ th {
   color: #176f1a !important;
   font-weight: bold;
 }
+.capacity-warning {
+  background-color: #fff8c5 !important; /* light yellow */
+  color: #9a6700 !important;
+  font-weight: bold;
+}
 .capacity-bad {
   background-color: #ffd7d9 !important; /* light red */
   color: #b00020 !important;
   font-weight: bold;
+}
+
+.total-cost {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #24292f;
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f6f8fa;
+  border-radius: 4px;
+  border-left: 4px solid #2da44e;
+}
+
+#storageResult, #computeResult {
+  font-size: 1.08em;
+  color: #24292f;
+  font-weight: 600;
+  margin-top: 1em;
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  border-left: 4px solid #2da44e;
+}
+
+#costEstimate {
+  background-color: #f6f8fa;
+  padding: 16px;
+  border-radius: 6px;
+  border-left: 4px solid #0969da;
+}
+
+.analysis-good {
+  color: #176f1a;
+  background-color: #d7ffd9;
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 4px;
+  border-left: 4px solid #176f1a;
+}
+
+.analysis-warning {
+  color: #9a6700;
+  background-color: #fff8c5;
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 4px;
+  border-left: 4px solid #d1a701;
+}
+
+.analysis-bad {
+  color: #b00020;
+  background-color: #ffd7d9;
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 4px;
+  border-left: 4px solid #b00020;
+}
+
+.analysis-recommendation {
+  color: #0969da;
+  background-color: #ddf4ff;
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 4px;
+  border-left: 4px solid #0969da;
 }

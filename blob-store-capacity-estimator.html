@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blob Store Capacity Estimator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Blob Store Capacity Estimator</h1>
+    <nav class="main-nav">
+      <a href="/">Event Hubs Estimator</a>
+      <a href="/adx-capacity-estimator">ADX Capacity Estimator</a>
+      <a href="/blob-store-capacity-estimator">Blob Store Capacity Estimator</a>
+    </nav>
+  </header>
+  
+  <div class="container">
+    <section>
+      <h2>About This Tool</h2>
+      <p>
+        This tool helps estimate the number of Azure Storage Accounts needed based on your daily ingress volume.
+        Each storage account has a maximum ingress throughput of <strong>60 GB/sec</strong>.
+      </p>
+      <p>
+        The calculator determines how many storage accounts you need to stay below the ingress limit and provides
+        a 6-month growth projection assuming 10% monthly growth.
+      </p>
+    </section>
+  </div>
+
+  <div class="container">
+    <section>
+      <h2>Storage Account Requirements</h2>
+      <p>
+        Calculate the number of storage accounts needed based on your daily ingress volume.
+      </p>
+      
+      <label for="dailyVolumeTB">Daily Ingress Volume (TB/day):</label>
+      <input type="number" id="dailyVolumeTB" min="0" step="any" placeholder="Enter TB/day">
+      
+      <button id="calculateStorageBtn">Calculate Storage Requirements</button>
+      <div id="storageResult" style="margin-top: 1em;"></div>
+    </section>
+  </div>
+
+  <div class="container">
+    <section>
+      <h2>Current Storage Account Configuration</h2>
+      <table id="storage-config-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Value</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Table row inserted by JS -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <div class="container">
+    <section>
+      <h2>6 Month Storage Account Projection</h2>
+      <p>
+        Storage requirements projection assuming <strong>10% monthly growth</strong> in ingress volume.
+      </p>
+      <table id="projection-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Projected Volume (TB/day)</th>
+            <th>Peak Ingress (GB/sec)</th>
+            <th>Required Storage Accounts</th>
+            <th>Utilization per Account</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Table rows inserted by JS -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <script src="router.js"></script>
+  <script src="blob-store-script.js"></script>
+</body>
+</html>
