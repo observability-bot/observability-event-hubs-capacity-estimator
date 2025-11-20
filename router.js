@@ -21,11 +21,11 @@ class Router {
 
   navigateTo(path) {
     if (path === '/') {
-      window.location.href = '/index.html';
-    } else if (path === '/adx-capacity-estimator') {
-      window.location.href = '/adx-capacity-estimator.html';
-    } else if (path === '/blob-store-capacity-estimator') {
-      window.location.href = '/blob-store-capacity-estimator.html';
+      window.location.href = '/observability-event-hubs-capacity-estimator/index.html';
+    } else if (path === '/observability-event-hubs-capacity-estimator/adx-capacity-estimator') {
+      window.location.href = '/observability-event-hubs-capacity-estimator/adx-capacity-estimator.html';
+    } else if (path === '/observability-event-hubs-capacity-estimator/blob-store-capacity-estimator') {
+      window.location.href = '/observability-event-hubs-capacity-estimator/blob-store-capacity-estimator.html';
     }
   }
 
